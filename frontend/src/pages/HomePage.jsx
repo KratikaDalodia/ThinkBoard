@@ -39,11 +39,11 @@ const HomePage = () => {
       <Navbar/>
       {isRateLimited && <RateLimitUi/>}
       {notes.length === 0 && !isRateLimited && !loading && <NotesNotFound/>}
-      <div className='max-w-7xl mx-20 p-4 mt-6'>
+      <div className='max-w-7xl mx-4 sm:mx-6 md:mx-10 lg:mx-20 p-4 mt-6'>
         {loading && <div className='text-center text-primary py-10'>Loading notes...</div>}
 
         {notes.length > 0 && !isRateLimited && (
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
             {notes.map(note => (
               <NoteCard key={note._id} note={note} setNotes={setNotes}/>
             ))}
