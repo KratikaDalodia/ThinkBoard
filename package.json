@@ -17,6 +17,12 @@
     "url": "https://github.com/KratikaDalodia/ThinkBoard/issues"
   },
   "homepage": "https://github.com/KratikaDalodia/ThinkBoard#readme",
-  "description": ""
+  "description": "",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express-validator": "^7.2.1",
+    "jsonwebtoken": "^9.0.2"
+  }
 }
- 
