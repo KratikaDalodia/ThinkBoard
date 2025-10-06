@@ -12,7 +12,7 @@ const NotesNotFound = ({username}) => {
         <NotebookIcon className="size-14 text-success" />
       </div>
       <h3 className="text-3xl font-bold">{`Hello! ${user.name}`}</h3>
-      <p className="text-base-content/70">
+      <p className="text-base-content/70 mx-6">
         Ready to organize your thoughts? Create your first note to get started on your journey.
       </p>
       <Link to="/create" className="btn btn-primary">
