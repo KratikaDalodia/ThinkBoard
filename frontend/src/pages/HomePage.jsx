@@ -1,57 +1,66 @@
-import React, { useEffect, useState } from 'react'
-import Navbar from '../components/Navbar'
-import RateLimitUi from '../components/RateLimitUi';
-import NoteCard from '../components/NoteCard';
-import toast from 'react-hot-toast'
-import api from '../libs/axios.js';
-import NotesNotFound from '../components/NotesNotFound.jsx';
+import React, { useEffect, useState, useContext } from "react";
+import Navbar from "../components/Navbar";
+import RateLimitUi from "../components/RateLimitUi";
+import NoteCard from "../components/NoteCard";
+import toast from "react-hot-toast";
+import api from "../libs/axios.js";
+import NotesNotFound from "../components/NotesNotFound.jsx";
+import { AuthContext } from "../context/AuthContext"; // <-- add this
 
 const HomePage = () => {
   const [isRateLimited, setRateLimited] = useState(false);
-  const [notes, setNotes] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [notes, setNotes] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(()=>{
-    const fetchNotes = async ()=>{ 
+  const { user, logout } = useContext(AuthContext); // get current user & logout
+
+  useEffect(() => {
+    const fetchNotes = async () => {
       try {
-        const res = await api.get("/notes")
-        console.log(res.data)
-        setNotes(res.data)
-        setRateLimited(false)
+        const res = await api.get("/notes");
+        setNotes(res.data);
+        setRateLimited(false);
       } catch (error) {
-        console.log("error fetching notes")
-        if(error.response.status === 429) {
-          setRateLimited(true)
+        console.error("Error fetching notes", error);
+
+        if (error.response?.status === 429) {
+          setRateLimited(true);
+        } else if (error.response?.status === 401) {
+          toast.error("Session expired, please login again");
+          logout(); // clear and redirect
+        } else {
+          toast.error("Failed to fetch notes");
         }
-        else{
-          toast.error("Failed to fetch notes")
-        }
+      } finally {
+        setLoading(false);
       }
-      finally{
-        setLoading(false)
-      }
-    }
+    };
 
     fetchNotes();
-  },[])
+  }, [logout]);
+
   return (
-    <div className='min-h-screen'>
-      <Navbar/>
-      {isRateLimited && <RateLimitUi/>}
-      {notes.length === 0 && !isRateLimited && !loading && <NotesNotFound/>}
-      <div className='max-w-7xl mx-4 sm:mx-6 md:mx-10 lg:mx-20 p-4 mt-6'>
-        {loading && <div className='text-center text-primary py-10'>Loading notes...</div>}
+    <div className="min-h-screen">
+      <Navbar />
+
+      {isRateLimited && <RateLimitUi />}
+      {notes.length === 0 && !isRateLimited && !loading && <NotesNotFound username={user?.name}/>}
+
+      <div className="max-w-7xl mx-4 sm:mx-6 md:mx-10 lg:mx-20 p-4 mt-6">
+        {loading && (
+          <div className="text-center text-primary py-10">Loading notes...</div>
+        )}
 
         {notes.length > 0 && !isRateLimited && (
-          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6'>
-            {notes.map(note => (
-              <NoteCard key={note._id} note={note} setNotes={setNotes}/>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {notes.map((note) => (
+              <NoteCard key={note._id} note={note} setNotes={setNotes} />
             ))}
           </div>
         )}
       </div>
     </div>
-  )
-}
- 
-export default HomePage
+  );
+};
+
+export default HomePage;

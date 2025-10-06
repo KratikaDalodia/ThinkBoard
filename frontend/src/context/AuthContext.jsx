@@ -1,28 +1,59 @@
-import React, { createContext, useState, useEffect } from "react";
-import api from "@/libs/axios.js";
+import { createContext, useState, useEffect } from "react";
+import api from "@/libs/axios";
 import { useNavigate } from "react-router";
 
 export const AuthContext = createContext();
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const [user, setUser] = useState(() => {
-    const saved = localStorage.getItem("user");
-    return saved ? JSON.parse(saved) : null;
-  });
-
   useEffect(() => {
-    // ensure axios has token header if token exists
     const token = localStorage.getItem("token");
-    if (token) api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    const userData = localStorage.getItem("user");
+
+    if (token && userData) {
+      setUser(JSON.parse(userData));
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
+
+    setLoading(false);
   }, []);
 
-  const login = ({ token, user }) => {
+  const login = async (email, password) => {
+    const res = await api.post("/auth/login", { email, password });
+
+    const token = res.data.token;
+    const userObj = {
+      _id: res.data._id,
+      name: res.data.name,
+      email: res.data.email,
+    };
+
     localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("user", JSON.stringify(userObj));
+
     api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    setUser(user);
-    navigate("/"); // or wherever
+
+    setUser(userObj);
+  };
+
+  const register = async (name, email, password) => {
+    const res = await api.post("/auth/register", { name, email, password });
+
+    const token = res.data.token;
+    const userObj = {
+      _id: res.data._id,
+      name: res.data.name,
+      email: res.data.email,
+    };
+
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", JSON.stringify(userObj));
+
+    api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+    setUser(userObj);
   };
 
   const logout = () => {
@@ -34,8 +65,8 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
-      {children}
+    <AuthContext.Provider value={{ user, login, register, logout, loading }}>
+      {!loading && children}
     </AuthContext.Provider>
   );
-}
+};

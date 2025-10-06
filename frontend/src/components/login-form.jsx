@@ -11,7 +11,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Link, useNavigate } from 'react-router';
 import api from '@/libs/axios.js';
-import { useState } from "react"
+import { useContext, useState } from "react"
+import { AuthContext } from "@/context/AuthContext"
 
 export function LoginForm({
   className,
@@ -20,15 +21,11 @@ export function LoginForm({
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const navigate = useNavigate();
-  
+    const {login} = useContext(AuthContext);
     const handleLogin = async (e) => {
       e.preventDefault();
       try {
-        const res = await api.post("/auth/login", {
-          email,
-          password,
-        });
-        localStorage.setItem("token", res.data.token);
+        await login(email, password);
         navigate("/"); // go to homepage after login
       } catch (err) {
         console.log(err.message);
@@ -55,11 +52,11 @@ export function LoginForm({
               <div className="grid gap-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  <a
+                  {/* <a
                     href="#"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
                     Forgot your password?
-                  </a>
+                  </a> */}
                 </div>
                 <Input id="password" type="password" required value={password} onChange={(e)=> setPassword(e.target.value)}/>
               </div>
